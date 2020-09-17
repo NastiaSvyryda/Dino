@@ -1,78 +1,64 @@
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
-import javafx.geometry.Pos;
-import javafx.scene.Group;
-import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
-import javafx.scene.layout.BorderPane;
 import javafx.util.Duration;
-
-import java.io.InputStream;
-import java.util.ArrayList;
 
 public class Ground {
 
-    private class GroundImage {
-        Image image;
-        int x;
-    }
 
     public static int GROUND_Y;
 
     private Image image;
 
-    private ArrayList<GroundImage> groundImageSet;
 
 
     public Ground(int panelHeight, int panelWidth) {
         GROUND_Y = (int)(panelHeight - 0.15 * panelHeight);
 
         try{
-            InputStream iconStream = getClass().getResourceAsStream("/images/Ground.png");
-            image = new Image(iconStream);
+            image = new Image("/images/Ground.png");
         } catch(Exception e) {e.printStackTrace();}
 
-        groundImageSet = new ArrayList<GroundImage>();
 
         //first ground image:
-        for(int i=0; i<3; i++) {
-            GroundImage obj = new GroundImage();
-            obj.image = image;
-            obj.x = 0;
-            groundImageSet.add(obj);
-        }
+
+
         ImageView imageView = new ImageView();
         imageView.setImage(image);
         imageView.setX(0);
         imageView.setY(GROUND_Y);
         imageView.setFitWidth(panelWidth);
-        imageView.setPreserveRatio(true);
-        BorderPane root = new BorderPane(imageView);
-        Scene scene = new Scene(root, 595, 370);
-        UserInterface.stage.setScene(scene);
-        UserInterface.stage.show();
+//        imageView.setPreserveRatio(true);
 
+        ImageView imageView_2 = new ImageView();
+        imageView_2.setImage(image);
+        imageView_2.setX(0);
+        imageView_2.setY(GROUND_Y);
+        imageView_2.setFitWidth(panelWidth);
+//        imageView_2.setPreserveRatio(true);
 
-        double sceneWidth = scene.getWidth();
-        double textWidth = imageView.getLayoutBounds().getWidth();
-
+//        Group root = new Group(buttonBox,imageView, imageView_2);
+        UserInterface.root.getChildren().addAll(imageView, imageView_2);
         // Define the Durations
         Duration startDuration = Duration.ZERO;
-        Duration endDuration = Duration.seconds(10);
+        Duration endDuration = Duration.seconds(3);
 
         // Create the start and end Key Frames
-        KeyValue startKeyValue = new KeyValue(imageView.translateXProperty(), sceneWidth);
-        KeyFrame startKeyFrame = new KeyFrame(startDuration, startKeyValue);
-        KeyValue endKeyValue = new KeyValue(imageView.translateXProperty(), -1.0 * textWidth);
-        KeyFrame endKeyFrame = new KeyFrame(endDuration, endKeyValue);
+        KeyFrame startKeyFrame = new KeyFrame(startDuration,
+                new KeyValue(imageView.translateXProperty(), 0));
+        KeyFrame endKeyFrame = new KeyFrame(endDuration,
+                new KeyValue(imageView.translateXProperty(), -1 * panelWidth));
 
+        KeyFrame startKeyFrame_2 = new KeyFrame(startDuration,
+                new KeyValue(imageView_2.translateXProperty(), panelWidth));
+        KeyFrame endKeyFrame_2 = new KeyFrame(endDuration,
+                new KeyValue(imageView_2.translateXProperty(), 0));
         // Create a Timeline
-        Timeline timeline;
-        timeline = new Timeline(startKeyFrame, endKeyFrame);
+        UserInterface.timeline_ground = new Timeline(startKeyFrame, endKeyFrame, startKeyFrame_2,endKeyFrame_2);
         // Let the animation run forever
-        timeline.setCycleCount(Timeline.INDEFINITE);
-        timeline.play();
+        UserInterface.timeline_ground.setCycleCount(Timeline.INDEFINITE);
+
     }
 }
