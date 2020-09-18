@@ -1,17 +1,22 @@
 import java.awt.Graphics;
-import java.awt.Rectangle;
 import java.awt.image.BufferedImage;
 import java.io.InputStream;
 import java.util.ArrayList;
 
+import javafx.animation.AnimationTimer;
 import javafx.animation.KeyFrame;
 import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
+import javafx.geometry.Rectangle2D;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.paint.Color;
+import javafx.scene.shape.Rectangle;
+import javafx.scene.shape.Shape;
 import javafx.util.Duration;
 
 
@@ -31,12 +36,14 @@ public class Dino {
             NO_FOOT = 3;
 
     private static int state;
+    public int gravity = 0;
 
     private int foot;
-    Image leftFootDino;
-    Image rightFootDino;
-    Image deadDino;
+    public Image leftFootDino;
+    public Image rightFootDino;
+    public Image deadDino;
     public ImageView imageView_dino;
+    AnimationTimer jumpTimer;
 
     public Dino() {
         leftFootDino =  new Image("/images/Dino-left-up.png");
@@ -46,11 +53,7 @@ public class Dino {
         dinoBaseY = Ground.GROUND_Y + 5;
         dinoTopY = Ground.GROUND_Y - (int)UserInterface.image_dino.getHeight() + 7;
         dinoStartX = 75;
-        dinoEndX = dinoStartX + (int)UserInterface.image_dino.getWidth();
-        topPoint = dinoTopY - 120;
 
-        state = 1;
-        foot = NO_FOOT;
         ImageView imageView_dino = new ImageView();
         imageView_dino.setImage(UserInterface.image_dino);
         imageView_dino.setX(dinoStartX);
@@ -78,7 +81,29 @@ public class Dino {
                 }));
 //        // Let the animation run forever
         UserInterface.timeline_run.setCycleCount(Timeline.INDEFINITE);
-
+        UserInterface.root.addEventFilter(KeyEvent.KEY_PRESSED, event->{
+            if (event.getCode() == KeyCode.SPACE && gravity == 0) {
+                    UserInterface.timeline_run.pause();
+                    imageView_dino.setImage(UserInterface.image_dino);
+                    double ypreviousPos = imageView_dino.getTranslateY();
+                    jumpTimer = new AnimationTimer(){
+                        @Override
+                        public void handle(long now) {
+                            gravity += 1;
+                            imageView_dino.setTranslateY(imageView_dino.getTranslateY() - 15 + gravity);
+                            if (ypreviousPos == imageView_dino.getTranslateY()) {
+                                jumpTimer.stop();
+                                UserInterface.timeline_run.play();
+                                gravity = 0;
+                            }
+                        }
+                    };
+                    jumpTimer.start();
+            }
+        });
     }
-
+    public Rectangle2D getDino() {
+        Rectangle2D obstacle = new Rectangle2D(imageView_dino.getTranslateX(), imageView_dino.getTranslateY(),UserInterface.image_dino.getWidth(), UserInterface.image_dino.getHeight());
+        return obstacle;
+    }
 }
