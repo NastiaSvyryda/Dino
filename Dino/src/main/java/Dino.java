@@ -35,7 +35,7 @@ public class Dino {
             RIGHT_FOOT = 2,
             NO_FOOT = 3;
 
-    private static int state;
+    public int state = 0;
     public int gravity = 0;
 
     private int foot;
@@ -43,7 +43,7 @@ public class Dino {
     public Image rightFootDino;
     public Image deadDino;
     public ImageView imageView_dino;
-    AnimationTimer jumpTimer;
+    public AnimationTimer jumpTimer;
 
     public Dino() {
         leftFootDino =  new Image("/images/Dino-left-up.png");
@@ -51,10 +51,10 @@ public class Dino {
         deadDino =  new Image("/images/Dino-big-eyes.png");
 
         dinoBaseY = Ground.GROUND_Y + 5;
-        dinoTopY = Ground.GROUND_Y - (int)UserInterface.image_dino.getHeight() + 7;
+        dinoTopY = Ground.GROUND_Y - (int)UserInterface.image_dino.getHeight() + 8;
         dinoStartX = 75;
 
-        ImageView imageView_dino = new ImageView();
+        imageView_dino = new ImageView();
         imageView_dino.setImage(UserInterface.image_dino);
         imageView_dino.setX(dinoStartX);
         imageView_dino.setY(dinoTopY);
@@ -70,12 +70,13 @@ public class Dino {
                 new EventHandler<ActionEvent>() {
                     @Override
                     public void handle(ActionEvent t) {
-                        imageView_dino.setImage(leftFootDino);
+                        state = RUNNING;imageView_dino.setImage(leftFootDino);
                     }
                 }), new KeyFrame(Duration.seconds(0.2),
                 new EventHandler<ActionEvent>() {
                     @Override
                     public void handle(ActionEvent t) {
+                        state = RUNNING;
                         imageView_dino.setImage(rightFootDino);
                     }
                 }));
@@ -90,7 +91,7 @@ public class Dino {
                         @Override
                         public void handle(long now) {
                             gravity += 1;
-                            imageView_dino.setTranslateY(imageView_dino.getTranslateY() - 15 + gravity);
+                            imageView_dino.setTranslateY(imageView_dino.getTranslateY() - 16 + gravity);
                             if (ypreviousPos == imageView_dino.getTranslateY()) {
                                 jumpTimer.stop();
                                 UserInterface.timeline_run.play();

@@ -1,3 +1,4 @@
+import javafx.animation.KeyFrame;
 import javafx.animation.Timeline;
 import javafx.application.Application;
 import javafx.event.ActionEvent;
@@ -7,15 +8,22 @@ import javafx.geometry.Rectangle2D;
 import javafx.scene.Group;
 import javafx.scene.Scene;
 import javafx.scene.control.Button;
+import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.KeyCode;
 import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.BorderPane;
 import javafx.scene.layout.HBox;
+import javafx.scene.paint.Color;
+import javafx.scene.paint.Paint;
 import javafx.scene.shape.Rectangle;
 import javafx.scene.shape.Shape;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import javafx.stage.Stage;
+import javafx.util.Duration;
+
 import java.io.InputStream;
 
 public class UserInterface extends Application {
@@ -27,12 +35,14 @@ public class UserInterface extends Application {
     public static Timeline timeline_ground;
     public static Timeline timeline_run;
     public static Timeline timeline_cactus;
-    public static Timeline timeline_jump;
+    public static Timeline timeline_collision;
+    public static Timeline timeline_result;
     public static Image image_dino;
     public static int count;
+    public static Label result;
     Ground ground;
-    Dino dino;
-    Obstacles cactus;
+    public static Dino dino;
+    public static Obstacles cactus;
     @Override
 
     public void start(Stage primaryStage) throws Exception {
@@ -79,33 +89,41 @@ public class UserInterface extends Application {
         ground = new Ground(HEIGHT, WIDTH);
         dino = new Dino();
         cactus = new Obstacles();
+        result = new Label();
         play.setOnAction(new EventHandler<ActionEvent>()
         {
             public void handle(ActionEvent event)
             {
                 timeline_ground.play();
                 timeline_run.play();
+                timeline_collision.play();
                 cactus.cactusAnimation.start();
                 play.setVisible(false);
                 pause.setVisible(true);
+                timeline_result.play();
                 //status.setText("Current State: " + timeline.getStatus());
             }
         });
-//        collision!!!!!!!
-//        if (dino.getDino().intersects(cactus.getCactus())) {
-//            timeline_run.pause();
-//            timeline_ground.pause();
-//            dino.imageView_dino.setImage(dino.deadDino);
-//            System.out.println("Dino + Obstacle " + "\n\n");
-//
-//        }
+        result.setLayoutX(WIDTH-50);
+        result.setStyle("-fx-font-family: 'Courier New'; -fx-font-weight: bold; -fx-font-size: 25px");//"Courier New"
+        result.setTextFill(Color.grayRgb(100));
+        root.getChildren().add(result);
+        UserInterface.timeline_result = new Timeline(new KeyFrame(Duration.millis(100),
+                new EventHandler<ActionEvent>() {
+                    @Override
+                    public void handle(ActionEvent t) {
+                        UserInterface.count++;
+                        UserInterface.result.setText(String.valueOf(UserInterface.count));
+                    }
+                }));
+        UserInterface.timeline_result.setCycleCount(Timeline.INDEFINITE);
         scene = new Scene(root);
         stage.setScene(scene);
-        stage.setResizable(false);
+        //stage.setResizable(false);
         stage.show();
     }
 
     public static void main(String[] args) {
-        Application.launch();
+        launch();
     }
 }
