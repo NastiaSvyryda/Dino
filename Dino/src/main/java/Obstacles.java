@@ -1,10 +1,8 @@
 import javafx.animation.AnimationTimer;
 import javafx.animation.KeyFrame;
-import javafx.animation.KeyValue;
 import javafx.animation.Timeline;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
-import javafx.geometry.Rectangle2D;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.util.Duration;
@@ -13,89 +11,88 @@ import java.util.ArrayList;
 
 public class Obstacles {
     public AnimationTimer cactusAnimation;
-    private ArrayList<ImageView> imageList;
-    //public ImageView cactus;
+    private ArrayList<ImageView> imageListCactus;
+    private ArrayList<ImageView> imageListClouds;
     int metres = 300;
 
     public Obstacles() {
         int rand = 0;
-        imageList = new ArrayList<ImageView>();
+        imageListCactus = new ArrayList<ImageView>();
+        imageListClouds = new ArrayList<ImageView>();
+
         for (int i =0; i < 5; i++) {
             ImageView imageView_cactus = new ImageView();
+            ImageView imageViewCloud = new ImageView(new Image("/images/cloud.png"));
             imageView_cactus.setImage(new Image("/images/Cactus-" + i +".png"));
             imageView_cactus.setLayoutY(Ground.GROUND_Y - new Image("/images/Cactus-" + i +".png").getHeight() + 10);
             rand = UserInterface.WIDTH + (int)(Math.random() * 10)*300;
-            for (ImageView y : imageList) {
+            for (ImageView y : imageListCactus) {
                 if (Math.abs(rand - y.getLayoutX()) < 300)
                     rand += 300*10;
             }
             imageView_cactus.setLayoutX(rand);
-            UserInterface.root.getChildren().addAll(imageView_cactus);
-            imageList.add(imageView_cactus);
+            imageViewCloud.setLayoutY(20 + 20*i);
+            imageViewCloud.setLayoutX(rand * 2);
+            UserInterface.root.getChildren().addAll(imageView_cactus, imageViewCloud);
+            imageListCactus.add(imageView_cactus);
+            imageListClouds.add(imageViewCloud);
         }
-
-//        imageView_cactus.setImage(image);
-        //imageView.setX(UserInterface.WIDTH - image.getWidth());
-        //imageView_cactus.setPreserveRatio(true);
-        //cactus = imageList.get((int)(Math.random() * 5));
+        cactusAnimation();
+        Menu.timeline_collision = checkCollision();
+    }
+    private Timeline checkCollision() {
+        Timeline collision = new Timeline(new KeyFrame(Duration.millis(2),
+                new EventHandler<ActionEvent>() {
+                    @Override
+                    public void handle(ActionEvent t) {
+                        for (ImageView i : imageListCactus) {
+                            if (Menu.dino.imageView_dino.getBoundsInParent().intersects(
+                                    i.getLayoutX() +10,
+                                    i.getLayoutY()+10,
+                                    i.getBoundsInParent().getWidth() - 15,
+                                    i.getBoundsInParent().getHeight() - 10)) {
+                                Menu.pause_click = true;
+                                Menu.timeline_run.pause();
+                                Menu.timeline_ground.pause();
+                                cactusAnimation.stop();
+                                Menu.timeline_collision.stop();
+                                Menu.timeline_score.stop();
+                                Menu.dino.jumpTimer.stop();
+                                Menu.restart.setVisible(true);
+                                Menu.pause.setVisible(false);
+                                Menu.dino.imageView_dino.setImage(Menu.dino.deadDino);
+                            }
+                        }
+                    }
+                }));
+        collision.setCycleCount(Timeline.INDEFINITE);
+        return collision;
+    }
+    private void cactusAnimation() {
         cactusAnimation = new AnimationTimer(){
             @Override
             public void handle(long now) {
                 double rand = 0;
-                for (ImageView i : imageList) {
+                int index = 0;
+                for (ImageView i : imageListCactus) {
                     i.setLayoutX(i.getLayoutX() - 4.44);
+                    imageListClouds.get(index).setLayoutX(imageListClouds.get(index).getLayoutX() - 2);
+                    rand = UserInterface.WIDTH + (int)(Math.random() * 10)*metres;
                     if (i.getLayoutX() < -50) {
-                        rand = UserInterface.WIDTH + (int)(Math.random() * 10)*metres;
-                        for (ImageView y : imageList) {
+                        for (ImageView y : imageListCactus) {
                             if (Math.abs(rand - y.getLayoutX()) < metres)
                                 rand += metres*10;
                         }
                         if (metres > 150)
                             metres -= 10;
-                        //i = imageList.get((int) (Math.random() * 5));
                         i.setLayoutX(rand);
-                        //metres -= 10;
                     }
+                    if (imageListClouds.get(index).getLayoutX() < -100) {
+                        imageListClouds.get(index).setLayoutX(rand*2);
+                    }
+                    index++;
                 }
             }
         };
-        UserInterface.timeline_collision = new Timeline(new KeyFrame(Duration.millis(2),
-                new EventHandler<ActionEvent>() {
-                    @Override
-                    public void handle(ActionEvent t) {
-                        for (ImageView i : imageList) {
-                            if (UserInterface.dino.imageView_dino.getBoundsInParent().intersects(
-                                    i.getLayoutX() +10,
-                                    i.getLayoutY()+10,
-                                    i.getBoundsInParent().getWidth() - 15,
-                                    i.getBoundsInParent().getHeight() - 10)) {
-                                UserInterface.timeline_run.pause();
-                                UserInterface.timeline_ground.pause();
-                                cactusAnimation.stop();
-                                UserInterface.dino.jumpTimer.stop();
-                                UserInterface.timeline_collision.stop();
-                                UserInterface.timeline_result.stop();
-                                UserInterface.dino.imageView_dino.setImage(UserInterface.dino.deadDino);
-                                System.out.println("Dino + Obstacle " + "\n\n");
-                            }
-                        }
-                    }
-                }));
-        UserInterface.timeline_collision.setCycleCount(Timeline.INDEFINITE);
-
-//        Duration startDuration = Duration.ZERO;
-//        Duration endDuration = Duration.seconds(3.1);
-//
-//        KeyFrame startKeyFrame = new KeyFrame(startDuration,
-//                new KeyValue(imageView_cactus.translateXProperty(), UserInterface.WIDTH));
-//        KeyFrame endKeyFrame = new KeyFrame(endDuration,
-//                new KeyValue(imageView_cactus.translateXProperty(), -1 * image.getWidth()));
-//
-//        UserInterface.timeline_cactus = new Timeline(startKeyFrame, endKeyFrame);
-//        UserInterface.timeline_cactus.setCycleCount(Timeline.INDEFINITE);
     }
-//    public Rectangle2D getCactus() {
-//        Rectangle2D obstacle = new Rectangle2D(cactus.getTranslateX(), cactus.getTranslateY(),new Image("/images/Cactus-2.png").getWidth(), new Image("/images/Cactus-2.png").getHeight());
-//        return obstacle;
-//    }
 }
